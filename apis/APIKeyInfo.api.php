@@ -2,13 +2,11 @@
 /**
 * 
 */
-class APIKeyInfoApi 
+class ApiAPIKeyInfo extends RAPI
 {
-	
-	function __construct()
-	{
-		# code...
-	}
+	public $api = '/account/APIKeyInfo.xml.aspx';
+	public $CAK = 0;
+
 	function test(){
 		echo '1';
 	}

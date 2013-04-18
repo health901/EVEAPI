@@ -5,10 +5,11 @@
 /**
 *  
 */
-class EveApi
+class REveApi
 {
 	private $keyID;
 	private $vCode;
+	private $AccessMask;
 
 	/**
 	*@param string $keyID api Key ID
@@ -32,7 +33,7 @@ class EveApi
 }
 
 function __classautoload($clssname){
-	if(preg_match('/^(\w+)Api$/', $clssname,$api)){
+	if(preg_match('/^Api(\w+)$/', $clssname,$api)){
 		require_once('./apis/'.$api[1].'.api.php');
 	}else{
 		require_once('./class/'.$clssname.'.class.php');
