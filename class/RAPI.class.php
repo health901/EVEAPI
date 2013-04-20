@@ -11,7 +11,7 @@ abstract class RAPI {
 	private $_param;
 
 	public function __construct() {
-		$config = require_once('/../api.config.php');
+		$config = require_once('/../config/api.config.php');
 		$this->_uri = $config['server'][$config['default']]['uri'];
 	}
 	public function __set($name,$value) {

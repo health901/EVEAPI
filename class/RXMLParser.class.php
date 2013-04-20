@@ -16,7 +16,8 @@ class RXMLParser
 		return $this->xmlString;
 	}
 	private function _parser(){
-		$this->_x = $this->xmlString.'xxxxx';
+		$this->_x = new SimpleXMLElement($this->xmlString);
+		print_r($this->_x);
 	}
 
 }
