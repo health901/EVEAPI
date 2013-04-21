@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright (C) <2013> <VRobin,healthlolicon@gmail.com>
  * 
@@ -17,57 +16,14 @@
  */
 
 /**
- * EVEAPI REveApi
  *
  * @author VRobin
- * 
  */
-class REveApi
-{
-	private $keyID;
-	private $vCode;
-	private $AccessMask;
-	private $config;
-	/**
-	*@param string $keyID api Key ID
-	*@param string $vCode api Verification Code
-	*/
-	public function __construct($keyID = null, $vCode = null)
-	{
-		$this->keyID = $keyID;
-		$this->vCode = $vCode;
-		$this->config = new RConfig;
-	}
-	public function __call($name, $arguments) {
-	    if(preg_match('/^Api(\w+)$/i', $name,$api)){
-		array_unshift($arguments, $this->config);
-		if(require_once(dirname(__FILE__).'/apis/'.$api[1].'.api.php')){
-		    return new $name($arguments);
-		}else{
-		    throw new RException('api not exist');
-		}
-		
-	    }
-	}
-	public function init($keyID,$vCode){
-		$this->keyID = $keyID;
-		$this->vCode = $vCode;		
-	}
-	public function config(){
-	    return $this->config;
-	}
-	public function checkAccessMask(){
-		$api = new ApiAPIKeyInfoApi;
-		$api->test();
-
-	}
+interface RCacheInterface {
+    
+    public function set($param,$value);
+    public function get($param);
+          
 }
 
-function __classautoload($classname){
-    if($classname){
-	require_once(dirname(__FILE__).'/class/'.$classname.'.class.php');
-    }
-
-}
-
-spl_autoload_register('__classautoload');
+?>

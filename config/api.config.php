@@ -14,7 +14,12 @@ return array(
 			'uri'=>'https://api.eveonline.com'
 			)
 		),
+	'system'=>array(
+	    'server'=>'Tranquility',
+	    'cache'=>'RFileCache',
+	),
 	//set default server
-	'default'=>'Tranquility'
+	
+	'params'=>array()
 	);
 ?>

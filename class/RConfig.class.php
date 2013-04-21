@@ -17,57 +17,48 @@
  */
 
 /**
- * EVEAPI REveApi
+ * EVEAPI RConfig
  *
  * @author VRobin
  * 
  */
-class REveApi
-{
-	private $keyID;
-	private $vCode;
-	private $AccessMask;
-	private $config;
-	/**
-	*@param string $keyID api Key ID
-	*@param string $vCode api Verification Code
-	*/
-	public function __construct($keyID = null, $vCode = null)
-	{
-		$this->keyID = $keyID;
-		$this->vCode = $vCode;
-		$this->config = new RConfig;
-	}
-	public function __call($name, $arguments) {
-	    if(preg_match('/^Api(\w+)$/i', $name,$api)){
-		array_unshift($arguments, $this->config);
-		if(require_once(dirname(__FILE__).'/apis/'.$api[1].'.api.php')){
-		    return new $name($arguments);
-		}else{
-		    throw new RException('api not exist');
-		}
-		
-	    }
-	}
-	public function init($keyID,$vCode){
-		$this->keyID = $keyID;
-		$this->vCode = $vCode;		
-	}
-	public function config(){
-	    return $this->config;
-	}
-	public function checkAccessMask(){
-		$api = new ApiAPIKeyInfoApi;
-		$api->test();
+class RConfig {
 
-	}
-}
+    private $config;
 
-function __classautoload($classname){
-    if($classname){
-	require_once(dirname(__FILE__).'/class/'.$classname.'.class.php');
+    public function __construct() {
+	$this->config = require_once(dirname(__FILE__) . '/../config/api.config.php');
+	return $this;
+    }
+
+    //couston configs,read and write
+    public function __get($param) {
+	$p = $this->config['params'][$param];
+	if($p){
+	    return $p;
+	}else{
+	    throw new RException('config param not exist');
+	}
+    }
+
+    public function __set($param, $value) {
+	$this->config[$param] = $value;
+    }
+
+    //system configs,readonly
+    public function system($name) {
+	if (isset($this->config['system'][$name])) {
+	    return $this->config['system'][$name];
+	}
+    }
+
+    //server info,readonly
+    public function server($name) {
+	if (isset($this->config['server'][$name])) {
+	    return $this->config['server'][$name];
+	}
     }
 
 }
 
-spl_autoload_register('__classautoload');
+?>
