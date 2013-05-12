@@ -25,29 +25,35 @@
 abstract class RAPI {
 
     //http://wiki.eve-id.net/APIv2_Page_Index
-    public $api; #API URI
+    private $api; #API name within scope
     public $CAK;  #CAK Access Mask
     public $GMT = 0;
-    public $_uri;
+    private $_uri; #Api Site URI
     private $_param;
     private $config;
+    private $error;
 
     public function __construct($arguments) {
 	$this->config = array_shift($arguments);
-	$this->__init($arguments);
 	$this->_readConfig();
+	$this->__init($arguments);
     }
 
-    public function __init($arguments) {
-	
-    }
+    abstract public function __init($arguments);
 
     public function __set($name, $value) {
 	$this->_param[$name] = $value;
     }
 
     public function __get($name) {
-	return $this->_param[$name];
+	if (method_exists(__CLASS__, 'get' . $name)) {
+	    $func = 'get' . $name;
+	    return $this->$func();
+	} elseif (array_key_exists($name, $this->_param)) {
+	    return $this->_param[$name];
+	} else {
+	    throw new RException('attribute not exist in class ' . __CLASS__);
+	}
     }
 
     public function setTimeZone($offset) {
@@ -57,20 +63,12 @@ abstract class RAPI {
     }
 
     public function query() {
-	$url = $this->_uri . $this->api;
-	if (sizeof($this->_param))
-	    $url .= '?' . http_build_query($this->_param);
-	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-	$html = curl_exec($ch);
-	if (!$html) {
-	    $this->error = curl_error($ch);
-	    curl_close($ch);
-	    return false;
-	}
-	curl_close($ch);
-	return new RXMLParser($html);
+	$result = new RHttpQuery($this->_uri, $api, $this->_param);
+	return $result;
+    }
+
+    public function getError() {
+	return $this->error;
     }
 
     private function _readConfig() {

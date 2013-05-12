@@ -17,45 +17,53 @@
  */
 
 /**
- * EVEAPI RConfig
+ * EVEAPI RHttpQuery
  *
  * @author VRobin
  * 
  */
-class RConfig {
+class RHttpQuery {
 
-    private $config;
+    private $uri;
+    private $params;
+    private $cacheClass;
 
-    public function __construct() {
-	$this->config = require_once(dirname(__FILE__) . '/../config/api.config.php');
-	return $this;
+    public function __construct($site, $api, $params) {
+	$this->uri = $site . $api;
+	$cacheSetting = REveApi::config()->system('cache');
+	$this->cacheClass = $cacheSetting['class'];
+	$this->params = $params;
+	$this->_query();
     }
 
-    //couston configs,read and write
-    public function __get($param) {
-	if (array_key_exists($param, $this->config['params'])) {
-	    return $this->config['params'][$param];
+    private function _query() {
+	$xmlpraser = new RXMLParser($this->_getData());
+	return new RResult($xmlpraser);
+    }
+
+    private function _getData() {
+	$cache = new $this->cacheClass;
+	if ($cache->isExist($this->url . serialize($parmas))) {
+	    return $cache->get($this->url . serialize($parmas));
 	} else {
-	    throw new RException('config param not exist');
+	    return $this->_cURLget($this->uri, $this->params);
 	}
     }
 
-    public function __set($param, $value) {
-	$this->config[$param] = $value;
-    }
-
-    //system configs,readonly
-    public function system($name) {
-	if (isset($this->config['system'][$name])) {
-	    return $this->config['system'][$name];
-	}
-    }
-
-    //server info,readonly
-    public function server($name) {
-	if (isset($this->config['server'][$name])) {
-	    return $this->config['server'][$name];
-	}
+    private function _cURLget($uri, $params = array(), $options = array()) {
+	$dash = strpos($uri, '?') === FALSE ? '?' : '&';
+	if (count($params))
+	    $url = $uri . $dash . http_build_query($params);
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	if (count($options))
+	    curl_setopt_array($ch, $options);
+	$xml = curl_exec($ch);
+	if (curl_error($ch))
+	    throw new RException($this->error);
+	curl_close($ch);
+	return $xml;
     }
 
 }

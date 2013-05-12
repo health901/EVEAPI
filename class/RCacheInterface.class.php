@@ -20,7 +20,7 @@
  * @author VRobin
  */
 interface RCacheInterface {
-    
+    public function isExist($param);
     public function set($param,$value);
     public function get($param);
           

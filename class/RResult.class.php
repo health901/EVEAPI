@@ -17,24 +17,16 @@
  */
 
 /**
- * EVEAPI ApiAPIKeyInfo
+ * EVEAPI RResult
  *
  * @author VRobin
  * 
  */
-class ApiAPIKeyInfo extends RAPI {
-
-    public $api = '/account/APIKeyInfo.xml.aspx';
-    public $CAK = 0;
-    
-    public function __init($arguments) {
-	;
+class RResult {
+    private $XML;
+    public function __construct($xmlpraser) {
+	$this->XML = $xmlpraser;
     }
-	    
-    function test() {
-	echo '1';
-    }
-
 }
 
 ?>

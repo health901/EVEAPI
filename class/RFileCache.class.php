@@ -22,13 +22,36 @@
  * @author VRobin
  * 
  */
-class RFileCache implements RCacheInterface{
+class RFileCache implements RCacheInterface {
+
+    public $path;
+
+    public function __construct() {
+	$cacheSetting = REveApi::config()->system('cache');
+	if (!$array_key_exists('path', $cacheSetting)) {
+	    $this->path = '../cache/';
+	} else {
+	    $this->path = $cacheSetting['path'];
+	}
+	if (!file_exists($this->path)) {
+	    throw new RException('cache folder not exist');
+	}elseif (fileperms($this->path)) {
+	    
+	}
+    }
+
+    public function isExist($param) {
+	;
+    }
+
     public function set($param, $value) {
-        ;
+	;
     }
+
     public function get($param) {
-        ;
+	;
     }
+
 }
 
 ?>

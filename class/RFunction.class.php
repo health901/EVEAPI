@@ -17,22 +17,14 @@
  */
 
 /**
- * EVEAPI ApiAPIKeyInfo
+ * EVEAPI RFunction
  *
  * @author VRobin
  * 
  */
-class ApiAPIKeyInfo extends RAPI {
-
-    public $api = '/account/APIKeyInfo.xml.aspx';
-    public $CAK = 0;
-    
-    public function __init($arguments) {
-	;
-    }
-	    
-    function test() {
-	echo '1';
+class RFunction {
+    static public function cacheHash($string) {
+	
     }
 
 }
