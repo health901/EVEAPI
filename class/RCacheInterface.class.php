@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (C) <2013> <VRobin,healthlolicon@gmail.com>
  * 
@@ -14,16 +15,38 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
+    return;
 /**
  *
  * @author VRobin
  */
 interface RCacheInterface {
-    public function isExist($param);
-    public function set($param,$value);
-    public function get($param);
-          
+
+    /**
+     * @param string $name cache name
+     * @return boolean
+     */
+    public function isExist($name);
+
+    /**
+     * @param string $name cache name
+     * @param mixed $value cache value
+     * @param int $expired expired time in timestamp format. if expired=0,this cache does not expire.
+     * @return boolean
+     */
+    public function set($name, $value, $expired);
+
+    /**
+     * @param string $name cache name
+     * @return mixed cache value
+     */
+    public function get($name);
+
+    /**
+     * @return boolen
+     */
+    public function clear();
 }
 
 ?>

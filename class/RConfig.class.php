@@ -15,6 +15,8 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
+    return;
 
 /**
  * EVEAPI RConfig
@@ -26,22 +28,29 @@ class RConfig {
 
     private $config;
 
-    public function __construct() {
-	$this->config = require_once(dirname(__FILE__) . '/../config/api.config.php');
+    public function __construct($new = false) {
+	if ($new || !file_exists(dirname(__FILE__) . '../Runtime/~runtime') || !$wakeup = unserialize(file_get_contents(dirname(__FILE__) . '../Runtime/~runtime'))) {
+	    $this->config = require_once(dirname(__FILE__) . '/../config/api.config.php');
+	    $this->Save();
+	} else {
+	    $this->config = $wakeup;
+	}
 	return $this;
     }
 
-    //couston configs,read and write
+    private function Save() {
+	if (!file_exists(dirname(__FILE__) . '../Runtime'))
+	    mkdir(dirname(__FILE__) . '../Runtime', '0777');
+	file_put_contents(dirname(__FILE__) . '../Runtime/~runtime', serialize($this->config));
+    }
+
+    //couston configs,readonly
     public function __get($param) {
 	if (array_key_exists($param, $this->config['params'])) {
 	    return $this->config['params'][$param];
 	} else {
-	    throw new RException('config param not exist');
+	    return NULL;
 	}
-    }
-
-    public function __set($param, $value) {
-	$this->config[$param] = $value;
     }
 
     //system configs,readonly

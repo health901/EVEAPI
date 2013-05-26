@@ -18,16 +18,36 @@
 if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
     return;
 /**
- * EVEAPI RFunction
+ * EVEAPI RCache
  *
  * @author VRobin
  * 
  */
-class RFunction {
-    static public function cacheHash($string) {
-	return sha1($string);
+class RCache {
+
+    protected $CacheHandel;
+
+    public function __construct() {
+	$config = new RConfig;
+        $cacheSetting = $config->system('cache');
+        $cacheClass = $cacheSetting['class'];
+        $this->CacheHandel = new $cacheClass;
     }
 
+    public function set($name, $value, $expired) {
+        return $this->CacheHandel->set($name, $value, $expired);
+    }
+
+    public function isExist($name) {
+        return $this->CacheHandel->isExist($name);
+    }
+
+    public function get($name) {
+        return $this->CacheHandel->get($name);
+    }
+    public function clear(){
+        return $this->CacheHandel->clear();
+    }
 }
 
 ?>

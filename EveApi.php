@@ -16,6 +16,22 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+function __classautoload($classname) {
+    if ($classname) {
+	require_once(dirname(__FILE__) . '/class/' . $classname . '.class.php');
+    }
+}
+
+spl_autoload_register('__classautoload');
+
+function RExceptionHandler(RException $e) {
+    exit($e->getMessage());
+}
+
+set_exception_handler('RExceptionHandler');
+
+define('IN_REVEAPI', TRUE);
+
 /**
  * EVEAPI REveApi
  *
@@ -26,8 +42,9 @@ class REveApi {
 
     private $keyID;
     private $vCode;
-    private $AccessMask;
+    private $AccessMask = NULL;
     private $config;
+    private $error;
 
     /**
      * @param string $keyID api Key ID
@@ -37,17 +54,32 @@ class REveApi {
 	$this->keyID = $keyID;
 	$this->vCode = $vCode;
 	$this->config = new RConfig;
+	$this->getAccessMask();
     }
 
-    public function __call($name, $arguments) {
+    public function __call($name, $arguments, $extra = NULL) {
 	if (preg_match('/^Api(\w+)$/i', $name, $api)) {
-	    array_unshift($arguments, $this->config);
 	    if (require_once(dirname(__FILE__) . '/apis/' . $api[1] . '.api.php')) {
-		return new $name($arguments);
+		$api = new $name($this->keyID, $this->vCode, $arguments, $extra);
+		if ($this->checkAccessMask($api->CAK))
+		    return $api;
+		else {
+		    $this->error = 'permission denied';
+		    return false;
+		}
 	    } else {
 		throw new RException('api not exist');
 	    }
 	}
+    }
+
+    public function config($name) {
+	return $this->config->$name;
+    }
+
+    public function ClearCache() {
+	$cache = new RCache;
+	return $cache->clear();
     }
 
     public function init($keyID, $vCode) {
@@ -55,26 +87,31 @@ class REveApi {
 	$this->vCode = $vCode;
     }
 
-    static public function config() {
-	if (is_object($this->config)) {
-	    return $this->config;
-	} else {
-
-	    return new RConfig();
+    public function getAccessMask() {
+	if (!is_null($this->AccessMask))
+	    return $this->AccessMask;
+	if (empty($this->keyID) || empty($this->vCode)) {
+	    $this->AccessMask = 0;
+	    return $this->AccessMask;
 	}
-    }
-
-    public function checkAccessMask() {
-	$api = new ApiAPIKeyInfoApi;
+	$api = $this->ApiAPIKeyInfo()->query();
 	$api->test();
     }
 
-}
-
-function __classautoload($classname) {
-    if ($classname) {
-	require_once(dirname(__FILE__) . '/class/' . $classname . '.class.php');
+    public function getError() {
+	return $this->error;
     }
+
+    /**
+     *
+     * @param int $CAK Api's CAK
+     * @return mixed 
+     */
+    public function checkAccessMask($CAK) {
+	if ($CAK == 0)
+	    return TRUE;
+	return $CAK & $this->AccessMask;
+    }
+
 }
 
-spl_autoload_register('__classautoload');

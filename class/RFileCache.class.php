@@ -15,7 +15,8 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
+    return;
 /**
  * EVEAPI RFileCache
  *
@@ -27,29 +28,42 @@ class RFileCache implements RCacheInterface {
     public $path;
 
     public function __construct() {
-	$cacheSetting = REveApi::config()->system('cache');
-	if (!$array_key_exists('path', $cacheSetting)) {
-	    $this->path = '../cache/';
-	} else {
-	    $this->path = $cacheSetting['path'];
-	}
-	if (!file_exists($this->path)) {
-	    throw new RException('cache folder not exist');
-	}elseif (fileperms($this->path)) {
-	    
-	}
+        $config = new RConfig;
+        $cacheSetting = $config->system('cache');
+        if (!$array_key_exists('path', $cacheSetting)) {
+            $this->path = '../cache/';
+        } else {
+            $this->path = $cacheSetting['path'];
+        }
+        if (!file_exists($this->path)) {
+            if (!mkdir($this->path, '0777'))
+                throw new RException('cache folder not exist');
+        }elseif (is_writable($this->path)) {
+            throw new RException('cache folder is not writable');
+        }
     }
 
-    public function isExist($param) {
-	;
+    public function isExist($name) {
+        return is_readable($this->path . $name);
     }
 
-    public function set($param, $value) {
-	;
+    public function set($name, $value, $expired) {
+        $data = array('expired' => $expired, 'data' => serialize($value));
+        return file_put_contents($this->path . $name, $data);
     }
 
-    public function get($param) {
-	;
+    public function get($name) {
+        $data = file_get_contents($this->path . $name);
+        if (!$data || $data['expired'] >= time())
+            return false;
+        return serialize($data['data']);
+    }
+
+    public function clear() {
+        $handle = opendir($this->path);
+        while (FALSE !== ($file = readdir($handle))) {
+            unlink($file);
+        }
     }
 
 }

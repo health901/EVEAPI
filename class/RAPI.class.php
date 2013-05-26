@@ -15,65 +15,92 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
+    return;
 /**
  * EVEAPI RAPI
  *
  * @author VRobin
  * 
  */
-abstract class RAPI {
+class RAPI {
 
     //http://wiki.eve-id.net/APIv2_Page_Index
-    private $api; #API name within scope
+    public $api; #API name with scope
     public $CAK;  #CAK Access Mask
-    public $GMT = 0;
-    private $_uri; #Api Site URI
-    private $_param;
-    private $config;
-    private $error;
+    public $GMT;
+    protected $_uri; #Api Site URI
+    protected $_param;
+    protected $config;
+    protected $error;
+    protected $keyID;
+    protected $vCode;
 
-    public function __construct($arguments) {
-	$this->config = array_shift($arguments);
-	$this->_readConfig();
-	$this->__init($arguments);
+    public function __construct($keyID = "", $vCode = "", $arguments = "",$extra=NULL) {
+        $this->config = new RConfig;
+        $this->_readConfig();
+        $this->GMT = $this->getTimeZone();
+        if (!empty($keyID) && !empty($vCode)) {
+            $this->_param['keyID'] = $keyID;
+            $this->_param['vCode'] = $vCode;
+        }
+        $this->__init($arguments,$extra);
     }
-
-    abstract public function __init($arguments);
-
-    public function __set($name, $value) {
-	$this->_param[$name] = $value;
-    }
-
-    public function __get($name) {
-	if (method_exists(__CLASS__, 'get' . $name)) {
-	    $func = 'get' . $name;
-	    return $this->$func();
-	} elseif (array_key_exists($name, $this->_param)) {
-	    return $this->_param[$name];
-	} else {
-	    throw new RException('attribute not exist in class ' . __CLASS__);
+    
+    public function __init($arguments,$extra=NULL){
+	foreach ($arguments as $key=>$argument){
+	    $this->_param[$key]=$argument;
 	}
     }
 
-    public function setTimeZone($offset) {
-	$offset = intval($offset);
-	if ($offset <= 12 && $offset >= -12)
-	    $this->GMT = $offset;
+    public function __set($name, $value) {
+        $this->_param[$name] = $value;
+    }
+
+    public function __get($name) {
+        if (method_exists(__CLASS__, 'get' . $name)) {
+            $func = 'get' . $name;
+            return $this->$func();
+        } elseif (array_key_exists($name, $this->_param)) {
+            return $this->_param[$name];
+        } else {
+            throw new RException('attribute not exist in class ' . __CLASS__);
+        }
+    }
+
+    public function getTimeZone() {
+        return isset($this->config->GMT) ? $this->config->GMT < 12 ? $this->config->GMT > -12 ? $this->config->GMT : 0  : 0  : 0;
     }
 
     public function query() {
-	$result = new RHttpQuery($this->_uri, $api, $this->_param);
-	return $result;
+        if (method_exists($this, 'beforeQuery')) {
+            if (FALSE === $this->_beforeQuery())
+                return false;
+        }
+        
+        $result = new RHttpQuery($this->_uri, $api, $this->_param);
+        if (method_exists($this, 'afterQuery')) {
+            if (FALSE === $this->_afterQuery(&$result))
+                return false;
+        }
+        return $result;
     }
 
     public function getError() {
-	return $this->error;
+        return $this->error;
     }
 
-    private function _readConfig() {
-	$server = $this->config->server($this->config->system('server'));
-	$this->_uri = $server['uri'];
+    protected function _readConfig() {
+        $server = $this->config->server($this->config->system('server'));
+        $this->_uri = $server['uri'];
+    }
+
+    protected function _beforeQuery() {
+        
+    }
+
+    protected function _afterQuery(&$result) {
+        
     }
 
 }
