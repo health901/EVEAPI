@@ -19,7 +19,7 @@ return array(
 	'server' => 'Tranquility',
 	'cache' =>array( 
 	    'class'=>'RFileCache',
-	    'path'=>'../cache/'
+	    'path'=>'/cache/'
 	    )
     ),
     //params can set by class RConfig,

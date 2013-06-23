@@ -15,31 +15,33 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
+if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
     return;
+
 /**
  * EVEAPI RXMLParser
  *
  * @author VRobin
  * 
  */
-class RXMLParser
-{
-	private $xmlString;
-	public $_x;
-	function __construct($string)
-	{
-		$this->xmlString = $string;
-		$this->_parser();
-		return $this;
-	}
-	public function XML(){
-		return $this->xmlString;
-	}
-	private function _parser(){
-		$this->_x = new SimpleXMLElement($this->xmlString);
-		print_r($this->_x);
-	}
+class RXMLParser {
+
+    private $xmlString;
+    public $SimpleXML;
+
+    function __construct($string) {
+	$this->xmlString = $string;
+	$this->_parser();
+    }
+
+    public function XML() {
+	return $this->xmlString;
+    }
+
+    private function _parser() {
+	$this->SimpleXML = new SimpleXMLElement($this->xmlString);
+    }
 
 }
+
 ?>

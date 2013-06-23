@@ -19,22 +19,22 @@ if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
     return;
 
 /**
- * EVEAPI ApiAPIKeyInfo
+ * EVEAPI ApiServerStatus
  *
  * @author VRobin
  * 
  */
-class ApiAPIKeyInfo extends RAPI {
+class ApiServerStatus extends RAPI {
 
-    public $api = '/account/APIKeyInfo.xml.aspx';
+    public $api = '/server/ServerStatus.xml.aspx';
     public $CAK = 0;
-
-    public function __init($arguments = NULL, $extra = NULL) {
-	;
-    }
 
     function test() {
 	echo '1';
+    }
+
+    public function __init($arguments = NULL) {
+	
     }
 
 }

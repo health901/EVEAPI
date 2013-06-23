@@ -15,8 +15,9 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
+if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
     return;
+
 /**
  * EVEAPI RHttpQuery
  *
@@ -25,49 +26,52 @@ if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
  */
 class RHttpQuery {
 
+    public $result;
+    
     private $uri;
     private $params;
-    private $cacheClass;
 
-    public function __construct($site, $api, $params) {
-        $this->params = $params;
-        $this->uri = $site . $api;
-        $this->_query();
+    public function __construct($site, $path, $params) {
+	$this->params = $params;
+	$this->uri = $site . $path;
     }
 
-    private function _query() {
-        $cache = new RCache;
-        $cachename = RFunction::cacheHash($this->url . serialize($this->parmas));
-        if ($cache->isExist($cachename)) {
-            return $cache->get($cachename);
-        } else {
-            return $this->_getData();
-        }
+    public function query() {
+	$cache = new RCache;
+	$cachename = RFunction::cacheHash($this->uri . serialize($this->params));
+	if ($cache->isExist($cachename)) {
+	    return $cache->get($cachename);
+	} else {
+	    return $this->_getData();
+	}
     }
 
     private function _getData() {
-        $xml = $this->_cURLget($this->uri, $this->params);
-        $xmlpraser = new RXMLParser($xml);
-        $result = new RResult($xmlpraser);
-        $cache = new RCache;
-        $cache->set(RFunction::cacheHash($this->url . serialize($this->parmas)), $result, $result['expired']);
-        return $result;
+	$xml = $this->_cURLget($this->uri, $this->params);
+	$xmlpraser = new RXMLParser($xml);
+	$result = new RResult($xmlpraser->SimpleXML);
+	$cache = new RCache;
+	$w = $cache->set(RFunction::cacheHash($this->uri . serialize($this->params)),$result->result , $result->until);
+	return $result->result;
     }
 
     private function _cURLget($uri, $params = array(), $options = array()) {
-        $dash = strpos($uri, '?') === FALSE ? '?' : '&';
-        if (count($params))
-            $url = $uri . $dash . http_build_query($params);
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        if (count($options))
-            curl_setopt_array($ch, $options);
-        $xml = curl_exec($ch);
-        if (!$xml)
-            throw new RException(curl_error($ch));
-        curl_close($ch);
-        return $xml;
+	$dash = strpos($uri, '?') === FALSE ? '?' : '&';
+	if (count($params)) {
+	    $url = $uri . $dash . http_build_query($params);
+	} else {
+	    $url = $uri;
+	}
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	if (count($options))
+	    curl_setopt_array($ch, $options);
+	$xml = curl_exec($ch);
+	if (!$xml)
+	    throw new RException('CURL:' . curl_error($ch));
+	curl_close($ch);
+	return $xml;
     }
 
 }

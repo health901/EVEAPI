@@ -30,15 +30,15 @@ class RFileCache implements RCacheInterface {
     public function __construct() {
         $config = new RConfig;
         $cacheSetting = $config->system('cache');
-        if (!$array_key_exists('path', $cacheSetting)) {
-            $this->path = '../cache/';
+        if (!array_key_exists('path', $cacheSetting)) {
+            $this->path = dirname(__FILE__).'/../cache/';
         } else {
-            $this->path = $cacheSetting['path'];
+            $this->path = dirname(__FILE__).'/..'.$cacheSetting['path'];
         }
         if (!file_exists($this->path)) {
             if (!mkdir($this->path, '0777'))
                 throw new RException('cache folder not exist');
-        }elseif (is_writable($this->path)) {
+        }elseif (!is_writable($this->path)) {
             throw new RException('cache folder is not writable');
         }
     }
@@ -48,15 +48,15 @@ class RFileCache implements RCacheInterface {
     }
 
     public function set($name, $value, $expired) {
-        $data = array('expired' => $expired, 'data' => serialize($value));
+        $data = serialize(array('expired' => $expired, 'data' => serialize($value)));
         return file_put_contents($this->path . $name, $data);
     }
 
     public function get($name) {
-        $data = file_get_contents($this->path . $name);
+        $data = unserialize(file_get_contents($this->path . $name));
         if (!$data || $data['expired'] >= time())
             return false;
-        return serialize($data['data']);
+        return unserialize($data['data']);
     }
 
     public function clear() {

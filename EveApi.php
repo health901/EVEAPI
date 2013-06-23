@@ -18,19 +18,21 @@
 
 function __classautoload($classname) {
     if ($classname) {
+//	echo 'Call: '.dirname(__FILE__) . '/class/' . $classname . '.class.php<br>';
 	require_once(dirname(__FILE__) . '/class/' . $classname . '.class.php');
     }
 }
 
 spl_autoload_register('__classautoload');
 
-function RExceptionHandler(RException $e) {
+function RExceptionHandler(Exception $e) {
     exit($e->getMessage());
 }
 
 set_exception_handler('RExceptionHandler');
 
 define('IN_REVEAPI', TRUE);
+define('RDEBUG', TRUE);	#debug 模式
 
 /**
  * EVEAPI REveApi
@@ -42,35 +44,43 @@ class REveApi {
 
     private $keyID;
     private $vCode;
-    private $AccessMask = NULL;
     private $config;
     private $error;
+    private $scope = 'account';
 
     /**
      * @param string $keyID api Key ID
      * @param string $vCode api Verification Code
      */
-    public function __construct($keyID = null, $vCode = null) {
+    public function __construct($keyID = null, $vCode = null, $scope = null) {
 	$this->keyID = $keyID;
 	$this->vCode = $vCode;
+	if (!is_null($scope))
+	    $this->scope = $scope;
 	$this->config = new RConfig;
-	$this->getAccessMask();
     }
 
-    public function __call($name, $arguments, $extra = NULL) {
-	if (preg_match('/^Api(\w+)$/i', $name, $api)) {
-	    if (require_once(dirname(__FILE__) . '/apis/' . $api[1] . '.api.php')) {
-		$api = new $name($this->keyID, $this->vCode, $arguments, $extra);
-		if ($this->checkAccessMask($api->CAK))
-		    return $api;
-		else {
-		    $this->error = 'permission denied';
-		    return false;
-		}
+    public function __call($name, $arguments) {
+	$apilist = require_once(dirname(__FILE__) . '/apis/apilist.inc.php');
+	if (preg_match('/^Api(\w+)$/i', $name, $apiname)) {
+	    $ApiFile = dirname(__FILE__) . '/apis/' . $this->scope . '/' . $apiname[1] . '.api.php';
+	    if (file_exists($ApiFile) && require_once($ApiFile)) {
+		$api = new $name($this->keyID, $this->vCode, $arguments);
 	    } else {
-		throw new RException('api not exist');
+		if (isset($apilist[$this->scope][$apiname[1]])) {
+		    $api = new RAPI($this->keyID, $this->vCode, $arguments);
+		    $api->init($this->scope,$apiname[1]);
+		} else {
+		    throw new RException('api not exist');
+		}
 	    }
+	    return $api;
 	}
+    }
+
+    public function scope($scope) {
+	$this->scope = $scope;
+	return $this;
     }
 
     public function config($name) {
@@ -87,30 +97,8 @@ class REveApi {
 	$this->vCode = $vCode;
     }
 
-    public function getAccessMask() {
-	if (!is_null($this->AccessMask))
-	    return $this->AccessMask;
-	if (empty($this->keyID) || empty($this->vCode)) {
-	    $this->AccessMask = 0;
-	    return $this->AccessMask;
-	}
-	$api = $this->ApiAPIKeyInfo()->query();
-	$api->test();
-    }
-
     public function getError() {
 	return $this->error;
-    }
-
-    /**
-     *
-     * @param int $CAK Api's CAK
-     * @return mixed 
-     */
-    public function checkAccessMask($CAK) {
-	if ($CAK == 0)
-	    return TRUE;
-	return $CAK & $this->AccessMask;
     }
 
 }

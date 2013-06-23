@@ -15,8 +15,9 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
+if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
     return;
+
 /**
  * EVEAPI RResult
  *
@@ -24,10 +25,60 @@ if(!defined('IN_REVEAPI') || IN_REVEAPI!=TRUE)
  * 
  */
 class RResult {
-    private $XML;
-    public function __construct($xmlpraser) {
-	$this->XML = $xmlpraser;
+
+    public $until;
+    public $current;
+    public $result = array();
+    private $XMLObject;
+
+    public function __construct($object) {
+	$this->XMLObject = $object;
+	$this->analyse();
     }
+
+    protected function analyse() {
+	$this->until = strval($this->XMLObject->cachedUntil);
+	$this->current = strval($this->XMLObject->currentTime);
+	$this->analyse_result($this->XMLObject->result, $this->result);
+    }
+
+    protected function analyse_result($object, &$result) {
+	foreach ($object->children() as $field) {
+	    if ($field->getName() == 'rowset') {
+		$rowset = $this->rowset($field);
+		$result[$rowset['name']]=$rowset['rowset'];
+	    } else {
+		foreach ($field->attributes() as $key => $value) {
+		    $result[$field->getName()][strval($key)] = strval($value);
+		}
+		if ($field->hasChildren()) {
+		    foreach ($field->children() as $fieldchild) {
+			$field_result = array();
+			$this->analyse_result($fieldchild, $field_result);
+			foreach ($field_result as $key => $value) {
+			    $result[$field->getName()][strval($key)] = strval($value);
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    protected function rowset($object) {
+	$attrs = $object->attributes();
+	$rowset=array();
+	foreach ($object->children() as $row){
+	    $row_data=array();
+	    $attr_row = $row->attributes();
+	    $key = strval($attrs->key);
+	    foreach ($attr_row as $k => $v){
+		$row_data[strval($k)]=strval($v);
+	    }
+	    $rowset[$row_data[$key]]=$row_data;
+	}
+	return array('name'=>strval($attrs->name),'rowset'=>$rowset);
+    }
+
 }
 
 ?>

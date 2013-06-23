@@ -28,20 +28,20 @@ class RConfig {
 
     private $config;
 
-    public function __construct($new = false) {
-	if ($new || !file_exists(dirname(__FILE__) . '../Runtime/~runtime') || !$wakeup = unserialize(file_get_contents(dirname(__FILE__) . '../Runtime/~runtime'))) {
-	    $this->config = require_once(dirname(__FILE__) . '/../config/api.config.php');
-	    $this->Save();
+    public function __construct() {
+	if (RDEBUG || !file_exists(dirname(__FILE__) . '/../Runtime/~runtime') || !$wakeup = unserialize(file_get_contents(dirname(__FILE__) . '/../Runtime/~runtime'))) {
+	    $this->config = require(dirname(__FILE__) . '/../config/api.config.php');
+	    $this->save();
 	} else {
 	    $this->config = $wakeup;
 	}
 	return $this;
     }
 
-    private function Save() {
-	if (!file_exists(dirname(__FILE__) . '../Runtime'))
-	    mkdir(dirname(__FILE__) . '../Runtime', '0777');
-	file_put_contents(dirname(__FILE__) . '../Runtime/~runtime', serialize($this->config));
+    private function save() {
+	if (!file_exists(dirname(__FILE__) . '/../Runtime'))
+	    mkdir(dirname(__FILE__) . '/../Runtime', '0777');
+	file_put_contents(dirname(__FILE__) . '/../Runtime/~runtime', serialize($this->config));
     }
 
     //couston configs,readonly
