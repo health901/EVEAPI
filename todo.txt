@@ -1,1 +1,2 @@
-缓存
+error 
+access check

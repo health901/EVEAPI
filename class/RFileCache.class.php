@@ -54,8 +54,10 @@ class RFileCache implements RCacheInterface {
 
     public function get($name) {
         $data = unserialize(file_get_contents($this->path . $name));
-        if (!$data || $data['expired'] >= time())
-            return false;
+        if (!$data || $data['expired'] < time()){
+	     return false;
+	}
+           
         return unserialize($data['data']);
     }
 

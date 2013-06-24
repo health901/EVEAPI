@@ -31,20 +31,16 @@ class RAPI {
     public $scope; #api scope
     public $CAK;  #CAK Access Mask the Api expect
     public $AccessMark; #ApiKey's AccessMark
-    public $GMT;
     public $_uri; #Api Site URI
     protected $_param;
     protected $config;
     protected $error;
-    protected $keyID;
-    protected $vCode;
     protected $apilist;
 
     public function __construct($keyID = "", $vCode = "", $arguments = "") {
 	$this->config = new RConfig;
 	$this->_readConfig();
 	$this->apilist = require_once(dirname(__FILE__) . '/../apis/apilist.inc.php');
-	$this->GMT = $this->getTimeZone();
 	if (!empty($keyID) && !empty($vCode)) {
 	    $this->_param['keyID'] = $keyID;
 	    $this->_param['vCode'] = $vCode;
@@ -52,7 +48,7 @@ class RAPI {
 	$this->__init($arguments);
     }
 
-    public function __init($arguments) {
+    protected function __init($arguments) {
 	foreach ($arguments as $key => $argument) {
 	    $this->_param[$key] = $argument;
 	}
@@ -79,10 +75,6 @@ class RAPI {
 	}
     }
 
-    public function getTimeZone() {
-	return isset($this->config->GMT) ? $this->config->GMT < 12 ? $this->config->GMT > -12 ? $this->config->GMT : 0  : 0  : 0;
-    }
-
     public function query() {
 	if (method_exists($this, '_beforeQuery')) {
 	    if (FALSE === $this->_beforeQuery())
@@ -103,7 +95,15 @@ class RAPI {
     }
 
     public function getAccessMark() {
-	$api = new ApiAPIKeyInfo();
+	if (empty($this->_param['keyID']) || empty($this->_param['vCode'])) {
+	    return false;
+	}
+	$api = new REVEAPI;
+	$response = $api->ApiAPIKeyInfo($this->_param['keyID'],$this->_param['vCode'])->query();
+	foreach ($response as $key){
+	    $this->AccessMark[$key['type']]=$key['accessMask'];
+	}
+	return true;
     }
 
     protected function _readConfig() {
@@ -124,8 +124,11 @@ class RAPI {
 	if ($this->CAK == 0 || is_array($this->CAK)) {
 	    return TRUE;
 	} else {
-	    $this->$this->getAccessMark();
-	    return $this->CAK & $this->AccessMark[$type];
+	    if ($this->$this->getAccessMark()) {
+		return $this->CAK & $this->AccessMark[$type];
+	    } else {
+		return false;
+	    }
 	}
     }
 

@@ -27,7 +27,6 @@ if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
 class RHttpQuery {
 
     public $result;
-    
     private $uri;
     private $params;
 
@@ -40,7 +39,11 @@ class RHttpQuery {
 	$cache = new RCache;
 	$cachename = RFunction::cacheHash($this->uri . serialize($this->params));
 	if ($cache->isExist($cachename)) {
-	    return $cache->get($cachename);
+	    if ($data = $cache->get($cachename)) {
+		return $data;
+	    } else {
+		return $this->_getData();
+	    }
 	} else {
 	    return $this->_getData();
 	}
@@ -51,7 +54,7 @@ class RHttpQuery {
 	$xmlpraser = new RXMLParser($xml);
 	$result = new RResult($xmlpraser->SimpleXML);
 	$cache = new RCache;
-	$w = $cache->set(RFunction::cacheHash($this->uri . serialize($this->params)),$result->result , $result->until);
+	$w = $cache->set(RFunction::cacheHash($this->uri . serialize($this->params)), $result->result, $result->until);
 	return $result->result;
     }
 

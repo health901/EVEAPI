@@ -18,7 +18,6 @@
 
 function __classautoload($classname) {
     if ($classname) {
-//	echo 'Call: '.dirname(__FILE__) . '/class/' . $classname . '.class.php<br>';
 	require_once(dirname(__FILE__) . '/class/' . $classname . '.class.php');
     }
 }
@@ -32,7 +31,6 @@ function RExceptionHandler(Exception $e) {
 set_exception_handler('RExceptionHandler');
 
 define('IN_REVEAPI', TRUE);
-define('RDEBUG', TRUE);	#debug 模式
 
 /**
  * EVEAPI REveApi

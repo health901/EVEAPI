@@ -27,7 +27,6 @@ if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
 class RResult {
 
     public $until;
-    public $current;
     public $result = array();
     private $XMLObject;
 
@@ -37,8 +36,12 @@ class RResult {
     }
 
     protected function analyse() {
-	$this->until = strval($this->XMLObject->cachedUntil);
-	$this->current = strval($this->XMLObject->currentTime);
+
+	$until = strval($this->XMLObject->cachedUntil);
+	//UTC
+	$date_until = DateTime::createFromFormat('Y-m-d H:i:s', $until, new DateTimeZone('UTC'));
+	$this->until = $date_until->getTimestamp();
+
 	$this->analyse_result($this->XMLObject->result, $this->result);
     }
 
@@ -46,17 +49,17 @@ class RResult {
 	foreach ($object->children() as $field) {
 	    if ($field->getName() == 'rowset') {
 		$rowset = $this->rowset($field);
-		$result[$rowset['name']]=$rowset['rowset'];
+		$result[$rowset['name']] = $rowset['rowset'];
 	    } else {
 		foreach ($field->attributes() as $key => $value) {
 		    $result[$field->getName()][strval($key)] = strval($value);
 		}
-		if ($field->hasChildren()) {
+		if ($field->count()) {
 		    foreach ($field->children() as $fieldchild) {
-			$field_result = array();
-			$this->analyse_result($fieldchild, $field_result);
+			$root = simplexml_load_string('<result>'.$fieldchild->asXML().'</result>');
+			$this->analyse_result($root, $field_result);
 			foreach ($field_result as $key => $value) {
-			    $result[$field->getName()][strval($key)] = strval($value);
+			    $result[$field->getName()][strval($key)] = is_array($value) ? $value : strval($value);
 			}
 		    }
 		}
@@ -66,17 +69,17 @@ class RResult {
 
     protected function rowset($object) {
 	$attrs = $object->attributes();
-	$rowset=array();
-	foreach ($object->children() as $row){
-	    $row_data=array();
+	$rowset = array();
+	foreach ($object->children() as $row) {
+	    $row_data = array();
 	    $attr_row = $row->attributes();
 	    $key = strval($attrs->key);
-	    foreach ($attr_row as $k => $v){
-		$row_data[strval($k)]=strval($v);
+	    foreach ($attr_row as $k => $v) {
+		$row_data[strval($k)] = strval($v);
 	    }
-	    $rowset[$row_data[$key]]=$row_data;
+	    $rowset[$row_data[$key]] = $row_data;
 	}
-	return array('name'=>strval($attrs->name),'rowset'=>$rowset);
+	return array('name' => strval($attrs->name), 'rowset' => $rowset);
     }
 
 }
