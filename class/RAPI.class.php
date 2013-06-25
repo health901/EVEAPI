@@ -58,6 +58,10 @@ class RAPI {
 	$this->scope = $scope;
 	$this->api = $api;
 	$this->CAK = $this->apilist[$this->scope][$this->api];
+	if($this->CAK == 0){
+	   unset($this->_param['keyID']);
+	   unset($this->_param['vCode']);
+	}
     }
 
     public function __set($name, $value) {
@@ -99,9 +103,9 @@ class RAPI {
 	    return false;
 	}
 	$api = new REVEAPI;
-	$response = $api->ApiAPIKeyInfo($this->_param['keyID'],$this->_param['vCode'])->query();
-	foreach ($response as $key){
-	    $this->AccessMark[$key['type']]=$key['accessMask'];
+	$response = $api->ApiAPIKeyInfo($this->_param['keyID'], $this->_param['vCode'])->query();
+	foreach ($response as $key) {
+	    $this->AccessMark[$key['type']] = $key['accessMask'];
 	}
 	return true;
     }
