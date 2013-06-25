@@ -1,6 +1,6 @@
 EVE OL PHP 类库
 ---
-Copyright (C) 2010-2012 by Viking Robin Petermann All rights reserved.
+Copyright (C) 2010-2012 by Viking Robin All rights reserved.
 
 适用于v2版API
 
@@ -10,6 +10,10 @@ Copyright (C) 2010-2012 by Viking Robin Petermann All rights reserved.
 #REQUIREMENTS
 * PHP 5.3+ (低版本未测试)
 * CURL
+
+#INSTALLATION
+1. 拷贝库至任意目录，保持库文件结构不变
+2. 在类库根目录下创建`Runtime`和`cache` 文件夹，并设置 _读取，写入，删除，创建_ 权限. (目录会自动创建，但以防万一，最好手动创建)
 
 #Usage
 **引入库文件：**
@@ -54,6 +58,7 @@ Copyright (C) 2010-2012 by Viking Robin Petermann All rights reserved.
     //无额外参数的接口
     $characters = $api->ApiCharacters();
     $alliancelist = $api->scope('eve')->ApiAllianceList();
+
     //须传递额外参数的接口
     $params = array(
 	'BeforeKillID'=>'12345',
@@ -65,7 +70,10 @@ Copyright (C) 2010-2012 by Viking Robin Petermann All rights reserved.
 **执行查询**
 
     $respone1 = $characters->query();
-    $respone2 = $api->scope('char')->ApKilllog($params);
+    $respone2 = $api->scope('char')->ApKilllog($params)->query();
+
+**查询结果**
+查询结果为数组
 
 #CONFIG
 配置文件位于：  `/config/api.config.php`
@@ -95,3 +103,12 @@ Copyright (C) 2010-2012 by Viking Robin Petermann All rights reserved.
 	//保留参数 params 目前尚无使用,
 	'params' => array()
     );
+
+#Files
+Dir:	`Runtime`	运行时文件夹，保存config的序列化<br>
+Dir:	`apis`		api接口文件文件夹，当接口有额外操作需求时，可创建api类，api类文件被优先d调用。以scope为子目录。<br>
+Dir:	`cache`		缓存文件夹<br>
+Dir:	`class`		核心类文件夹<br>
+Dir:	`config`	配置文件夹文件夹<br>
+File:	`EveApi.php`	类库主文件<br>
+File:	`license-mit`	MIT许可协议<br>
