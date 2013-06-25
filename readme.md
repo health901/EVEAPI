@@ -1,6 +1,6 @@
 EVE OL PHP 类库
 ---
-Copyright (C) 2010-2012 by Viking Robin All rights reserved.
+Copyright (C) 2013 by Viking Robin All rights reserved.
 
 适用于v2版API
 
