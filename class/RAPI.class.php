@@ -58,10 +58,11 @@ class RAPI {
 	$this->scope = $scope;
 	$this->api = $api;
 	$this->CAK = $this->apilist[$this->scope][$this->api];
-	if($this->CAK == 0){
-	   unset($this->_param['keyID']);
-	   unset($this->_param['vCode']);
+	if ($this->CAK == 0) {
+	    unset($this->_param['keyID']);
+	    unset($this->_param['vCode']);
 	}
+	return $this;
     }
 
     public function __set($name, $value) {
@@ -98,18 +99,6 @@ class RAPI {
 	return $this->error;
     }
 
-    public function getAccessMark() {
-	if (empty($this->_param['keyID']) || empty($this->_param['vCode'])) {
-	    return false;
-	}
-	$api = new REVEAPI;
-	$response = $api->ApiAPIKeyInfo($this->_param['keyID'], $this->_param['vCode'])->query();
-	foreach ($response as $key) {
-	    $this->AccessMark[$key['type']] = $key['accessMask'];
-	}
-	return true;
-    }
-
     protected function _readConfig() {
 	$server = $this->config->server($this->config->system('server'));
 	$this->_uri = $server['uri'];
@@ -134,6 +123,18 @@ class RAPI {
 		return false;
 	    }
 	}
+    }
+
+    protected function getAccessMark() {
+	if (empty($this->_param['keyID']) || empty($this->_param['vCode'])) {
+	    return false;
+	}
+	$api = new REVEAPI;
+	$response = $api->ApiAPIKeyInfo($this->_param['keyID'], $this->_param['vCode'])->query();
+	foreach ($response as $key) {
+	    $this->AccessMark[$key['type']] = $key['accessMask'];
+	}
+	return true;
     }
 
 }

@@ -93,6 +93,7 @@ class REveApi {
     public function init($keyID, $vCode) {
 	$this->keyID = $keyID;
 	$this->vCode = $vCode;
+	return $this;
     }
 
     public function getError() {

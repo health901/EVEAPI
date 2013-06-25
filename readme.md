@@ -69,8 +69,8 @@ Copyright (C) 2013 by Viking Robin All rights reserved.
 
 **执行查询**
 
-    $respone1 = $characters->query();
-    $respone2 = $api->scope('char')->ApKilllog($params)->query();
+    $response1 = $characters->query();
+    $response2 = $api->scope('char')->ApKilllog($params)->query();
 
 **查询结果**
 查询结果为数组
