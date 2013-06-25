@@ -56,7 +56,7 @@ class RResult {
 		}
 		if ($field->count()) {
 		    foreach ($field->children() as $fieldchild) {
-			$root = simplexml_load_string('<result>'.$fieldchild->asXML().'</result>');
+			$root = simplexml_load_string('<result>' . $fieldchild->asXML() . '</result>');
 			$this->analyse_result($root, $field_result);
 			foreach ($field_result as $key => $value) {
 			    $result[$field->getName()][strval($key)] = is_array($value) ? $value : strval($value);
@@ -72,16 +72,28 @@ class RResult {
 	$rowset = array();
 	foreach ($object->children() as $row) {
 	    $row_data = array();
+	    if ($row->count()) {
+		foreach ($row->children() as $row_child) {
+		    $root = simplexml_load_string('<result>' . $row_child->asXML() . '</result>');
+		    $this->analyse_result($root, $row_result);
+		    foreach ($row_result as $key => $value) {
+			$row_data[strval($key)] = is_array($value) ? $value : strval($value);
+		    }
+		}
+	    }
 	    $attr_row = $row->attributes();
 	    $key = strval($attrs->key);
 	    foreach ($attr_row as $k => $v) {
 		$row_data[strval($k)] = strval($v);
 	    }
-	    $rowset[$row_data[$key]] = $row_data;
+	    if ($key) {
+		$rowset[$row_data[$key]] = $row_data;
+	    } else {
+		$rowset[] = $row_data;
+	    }
 	}
 	return array('name' => strval($attrs->name), 'rowset' => $rowset);
     }
 
 }
-
 ?>
