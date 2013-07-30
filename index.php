@@ -9,6 +9,6 @@ require_once 'Eveapi.php';
 //define('RDEBUG', TRUE);	#debug  runtime will be renewed 
 
 $api = new REVEAPI('2305084','QsnHFao8ZhVjOR14B8lYBSS1hbuBKGIkrwP9EUhgt3WrZV3LZDxdYoXca6zsT3SQ');
-$response=$api->ApiAPIKeyInfo()->query();
+$response=$api->APIKeyInfo()->query();
 print_r($response);
 ?>

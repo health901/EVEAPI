@@ -60,20 +60,19 @@ class REveApi {
 
     public function __call($name, $arguments) {
 	$apilist = require_once(dirname(__FILE__) . '/apis/apilist.inc.php');
-	if (preg_match('/^Api(\w+)$/i', $name, $apiname)) {
-	    $ApiFile = dirname(__FILE__) . '/apis/' . $this->scope . '/' . $apiname[1] . '.api.php';
-	    if (file_exists($ApiFile) && require_once($ApiFile)) {
-		$api = new $name($this->keyID, $this->vCode, $arguments);
+	$ApiFile = dirname(__FILE__) . '/apis/' . $this->scope . '/' . $name . '.api.php';
+	if (file_exists($ApiFile) && require_once($ApiFile)) {
+	    $classname = 'Api' . $name;
+	    $api = new $classname($this->keyID, $this->vCode, $arguments);
+	} else {
+	    if (isset($apilist[$this->scope][$name])) {
+		$api = new RAPI($this->keyID, $this->vCode, $arguments);
+		$api->init($this->scope, $name);
 	    } else {
-		if (isset($apilist[$this->scope][$apiname[1]])) {
-		    $api = new RAPI($this->keyID, $this->vCode, $arguments);
-		    $api->init($this->scope,$apiname[1]);
-		} else {
-		    throw new RException('api not exist');
-		}
+		throw new RException('api not exist');
 	    }
-	    return $api;
 	}
+	return $api;
     }
 
     public function scope($scope) {

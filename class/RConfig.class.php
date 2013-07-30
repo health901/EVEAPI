@@ -27,9 +27,12 @@ if (!defined('IN_REVEAPI') || IN_REVEAPI != TRUE)
 class RConfig {
 
     private $config;
-
+    private $runtime;
+    
     public function __construct() {
-	if (RDEBUG || !file_exists(dirname(__FILE__) . '/../Runtime/~runtime') || !$wakeup = unserialize(file_get_contents(dirname(__FILE__) . '/../Runtime/~runtime'))) {
+	$this->runtime = dirname(__FILE__) . '/../Runtime/~runtime';
+	$wakeup = unserialize(file_get_contents($this->runtime));
+	if ((defined('RDEBUG') && RDEBUG === TRUE) || !$wakeup) {  
 	    $this->config = require(dirname(__FILE__) . '/../config/api.config.php');
 	    $this->save();
 	} else {
@@ -39,9 +42,13 @@ class RConfig {
     }
 
     private function save() {
+	$server = $this->system('server');
+	$serverinfo = $this->server($server);
+	$this->config['system']['url'] = $serverinfo['uri'];
+	unset($this->config['server']);
 	if (!file_exists(dirname(__FILE__) . '/../Runtime'))
 	    mkdir(dirname(__FILE__) . '/../Runtime', '0777');
-	file_put_contents(dirname(__FILE__) . '/../Runtime/~runtime', serialize($this->config));
+	file_put_contents($this->runtime, serialize($this->config));
     }
 
     //couston configs,readonly
@@ -61,7 +68,7 @@ class RConfig {
     }
 
     //server info,readonly
-    public function server($name) {
+    private function server($name) {
 	if (isset($this->config['server'][$name])) {
 	    return $this->config['server'][$name];
 	}

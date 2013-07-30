@@ -100,8 +100,7 @@ class RAPI {
     }
 
     protected function _readConfig() {
-	$server = $this->config->server($this->config->system('server'));
-	$this->_uri = $server['uri'];
+	$this->_uri = $this->config->system('url');
     }
 
     protected function _beforeQuery() {

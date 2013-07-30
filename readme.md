@@ -51,26 +51,26 @@ Copyright (C) 2013 by Viking Robin All rights reserved.
 **实例化具体API**
 
     /**
-    * api调用方法名为	'Api'+ <API接口名>
-    * 使用数组传递API所需参数	Api<APINAME>($array_params)
-    * <所须传递的额外参数指除 $KeyID,$vCode 之外的参数。
+    * api调用方法名为	<API接口名>
+    * 使用数组传递API所需参数	<APINAME>($array_params)
+    * <所须传递的额外参数指除 $KeyID,$vCode 之外的参数。>
     */
     //无额外参数的接口
-    $characters = $api->ApiCharacters();
-    $alliancelist = $api->scope('eve')->ApiAllianceList();
+    $characters = $api->Characters();
+    $alliancelist = $api->scope('eve')->AllianceList();
 
     //须传递额外参数的接口
     $params = array(
 	'BeforeKillID'=>'12345',
 	'characterID'=>'12345678';
     );
-    $killmail = $api->scope('char')->ApKilllog($params);
+    $killmail = $api->scope('char')->Killlog($params);
     
 
 **执行查询**
 
     $response1 = $characters->query();
-    $response2 = $api->scope('char')->ApKilllog($params)->query();
+    $response2 = $api->scope('char')->Killlog($params)->query();
 
 **查询结果**
 查询结果为数组
